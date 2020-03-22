@@ -1,0 +1,15 @@
+{
+    "name": "xfudox/file",
+    "description": "file handling",
+    "type": "library",
+    "require": {
+        "laravel/framework": "^7.2"
+    },
+    "authors": [
+        {
+            "name": "Silvio Gratani",
+            "email": "silvio.gratani@gmail.com"
+        }
+    ],
+    "minimum-stability": "alpha"
+}
