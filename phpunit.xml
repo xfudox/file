@@ -10,13 +10,8 @@
          processIsolation="false"
          stopOnFailure="false">
     <testsuites>
-        <testsuite name="File">
-            <directory>Tests</directory>
+        <testsuite name="PHP 7.4 Testsuite">
+            <directory>./Tests</directory>
         </testsuite>
     </testsuites>
-    <filter>
-        <whitelist>
-            <directory suffix=".php">src/</directory>
-        </whitelist>
-    </filter>
 </phpunit>
