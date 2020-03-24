@@ -1,15 +1,21 @@
 {
     "name": "xfudox/file",
-    "description": "file handling",
-    "type": "library",
-    "require": {
-        "laravel/framework": "^7.2"
-    },
+    "description": "File handling.",
     "authors": [
         {
             "name": "Silvio Gratani",
             "email": "silvio.gratani@gmail.com"
         }
     ],
-    "minimum-stability": "alpha"
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "^9.0",
+        "mockery/mockery": "^1.3",
+        "orchestra/testbench": "^5.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "xfudox\\file\\": "src/"
+        }
+    }
 }
