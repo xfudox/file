@@ -17,7 +17,14 @@ class FileTest extends TestCase
     
     public function testCanCreate()
     {
-        $file = $this->createDefaultFile();
+        $file = File::create([
+            'name'      => static::DEFAULT_NAME,
+            'extension' => static::DEFAULT_EXTENSION,
+            'mime'      => static::DEFAULT_MIME,
+            'disk'      => static::DEFAULT_DISK,
+            'path'      => static::DEFAULT_PATH,
+            'size'      => static::DEFAULT_SIZE,
+        ]);
 
         $this->assertIsObject($file);
         $this->assertInstanceOf(File::class, $file);
@@ -88,17 +95,5 @@ class FileTest extends TestCase
     public function testCheckAccessors(File $file)
     {
         return $file;
-    }
-
-    private function createDefaultFile() : File
-    {
-        return File::create([
-            'name'      => static::DEFAULT_NAME,
-            'extension' => static::DEFAULT_EXTENSION,
-            'mime'      => static::DEFAULT_MIME,
-            'disk'      => static::DEFAULT_DISK,
-            'path'      => static::DEFAULT_PATH,
-            'size'      => static::DEFAULT_SIZE,
-        ]);
     }
 }
