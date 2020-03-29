@@ -52,7 +52,7 @@ class FileTest extends TestCase
     /** @depends testCheckAttributes */
     public function testCanUpdate(File $file)
     {
-        $file->update([
+        $has_updated = $file->update([
             'name'      => 'new_name.pdf',
             'extension' => 'pdf',
             'mime'      => 'application/pdf',
@@ -61,6 +61,7 @@ class FileTest extends TestCase
             'size'      => 2048,
         ]);
 
+        $this->assertTrue($has_updated);
         $this->assertEquals('new_name.pdf', $file->name);
         $this->assertEquals('pdf', $file->extension);
         $this->assertEquals('application/pdf', $file->mime);
@@ -91,7 +92,7 @@ class FileTest extends TestCase
 
     private function createDefaultFile() : File
     {
-        return new File([
+        return File::create([
             'name'      => static::DEFAULT_NAME,
             'extension' => static::DEFAULT_EXTENSION,
             'mime'      => static::DEFAULT_MIME,
