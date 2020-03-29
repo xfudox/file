@@ -1,9 +1,11 @@
 <?php
 
-use Orchestra\Testbench\TestCase as TestbenchTestCase;
-use xfudox\File\Models\File;
+namespace xfudox\File\Tests;
 
-class FileTest extends TestbenchTestCase
+use xfudox\File\Models\File;
+use xfudox\File\Tests\TestCase;
+
+class FileTest extends TestCase
 {
 
     const DEFAULT_NAME      = 'default_file.png';

@@ -22,15 +22,12 @@
         }
     },
     "autoload-dev": {
-        "classmap": [
-            "tests"
-        ]
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "xfudox\\File\\FileServiceProvider"
-            ]
+        "psr-4": {
+            "xfudox\\File\\Tests\\": "tests/"
         }
+    },
+    "scripts": {
+        "test": "php vendor/phpunit/phpunit/phpunit",
+        "test-f": "php vendor/phpunit/phpunit/phpunit --filter"
     }
 }

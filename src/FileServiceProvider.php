@@ -30,5 +30,6 @@ class FileServiceProvider extends ServiceProvider
     {
         $this->loadRoutesFrom(__DIR__.'/routes/web.php');
         $this->loadViewsFrom(__DIR__.'/resources/views', 'file');
+        $this->loadMigrationsFrom(__DIR__.'/Database/migrations');
     }
 }
