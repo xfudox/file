@@ -27,7 +27,6 @@
         }
     },
     "scripts": {
-        "test": "php vendor/phpunit/phpunit/phpunit",
-        "test-f": "php vendor/phpunit/phpunit/phpunit --filter"
+        "test": "php vendor/phpunit/phpunit/phpunit"
     }
 }
