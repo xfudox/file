@@ -7,13 +7,6 @@ use xfudox\File\Tests\TestCase;
 
 class FileTest extends TestCase
 {
-
-    const DEFAULT_NAME      = 'default_file.png';
-    const DEFAULT_EXTENSION = 'png';
-    const DEFAULT_MIME      = 'image/png';
-    const DEFAULT_DISK      = 'local';
-    const DEFAULT_PATH      = 'path';
-    const DEFAULT_SIZE      = 1024;
     
     public function testCanCreate()
     {
