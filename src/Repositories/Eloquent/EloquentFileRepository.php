@@ -26,7 +26,7 @@ class EloquentFileRepository implements FileRepository
             'name'      => $uploaded_file->getClientOriginalName(),
             'extension' => $uploaded_file->getClientOriginalExtension(),
             'mime'      => $uploaded_file->getClientMimeType(),
-            'size'      => $uploaded_file->getClientSize(),
+            'size'      => $uploaded_file->getSize(),
             'disk'      => $disk,
             'path'      => $path,
         ]);
