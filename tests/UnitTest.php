@@ -41,7 +41,49 @@ class UnitTest extends TestbenchTestCase
     {
         $fullname = static::DEFAULT_PATH . '/' . static::DEFAULT_NAME;
         $this->assertEquals($fullname, $file->fullname);
+        // TODO: check url
+        // TODO: check exists
 
+        return $file;
+    }
+
+    /** @depends testCheckAttributes */
+    public function testCanUpdate(File $file)
+    {
+        $file->update([
+            'name'      => 'new_name.pdf',
+            'extension' => 'pdf',
+            'mime'      => 'application/pdf',
+            'disk'      => 'remote',
+            'path'      => 'new/path',
+            'size'      => '2048',
+        ]);
+
+        $this->assertEquals('new_name.pdf', $file->name);
+        $this->assertEquals('pdf', $file->extension);
+        $this->assertEquals('application/pdf', $file->mime);
+        $this->assertEquals('remote', $file->disk);
+        $this->assertEquals('new/path', $file->path);
+        $this->assertEquals('2048', $file->size);
+
+        return $file;
+    }
+
+    /** @depends testCheckAttributes */
+    public function testCheckMutators(File $file)
+    {
+        $file->update([
+            'path' => '/'
+        ]);
+
+        $this->assertEquals('', $file->path);
+
+        return $file;
+    }
+
+    /** @depends testCheckAttributes */
+    public function testCheckAccessors(File $file)
+    {
         return $file;
     }
 
