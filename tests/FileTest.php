@@ -11,7 +11,7 @@ class FileTest extends TestbenchTestCase
     const DEFAULT_MIME      = 'image/png';
     const DEFAULT_DISK      = 'local';
     const DEFAULT_PATH      = 'path';
-    const DEFAULT_SIZE      = '1024';
+    const DEFAULT_SIZE      = 1024;
     
     public function testCanCreate()
     {
@@ -56,7 +56,7 @@ class FileTest extends TestbenchTestCase
             'mime'      => 'application/pdf',
             'disk'      => 'remote',
             'path'      => 'new/path',
-            'size'      => '2048',
+            'size'      => 2048,
         ]);
 
         $this->assertEquals('new_name.pdf', $file->name);
