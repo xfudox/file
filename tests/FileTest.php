@@ -83,10 +83,4 @@ class FileTest extends TestCase
 
         return $file;
     }
-
-    /** @depends testCheckAttributes */
-    public function testCheckAccessors(File $file)
-    {
-        return $file;
-    }
 }
