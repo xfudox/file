@@ -3,7 +3,7 @@
 use Orchestra\Testbench\TestCase as TestbenchTestCase;
 use xfudox\File\Models\File;
 
-class UnitTest extends TestbenchTestCase
+class FileTest extends TestbenchTestCase
 {
 
     const DEFAULT_NAME      = 'default_file.png';
