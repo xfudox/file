@@ -11,12 +11,20 @@ use xfudox\File\Tests\TestCase;
 
 class FileRepositoryTest extends TestCase
 {
+
+    private $repository;
+
+    public function setUp() : void
+    {
+        parent::setUp();
+        $this->repository = App::make(FileRepository::class);
+    }
     
     public function testCreateFromUploadedFile()
     {
         $uploaded_file = UploadedFile::fake()->image('uploaded_image.png');
 
-        $file = App::make(FileRepository::class)->createFromUploadedFile($uploaded_file);
+        $file = $this->repository->createFromUploadedFile($uploaded_file);
 
         $this->assertIsObject($file);
         $this->assertInstanceOf(File::class, $file);
@@ -34,7 +42,7 @@ class FileRepositoryTest extends TestCase
     public function testGetFileUrl(File $file)
     {
         $expected_url   = Storage::disk($file->disk)->url($file->fullname);
-        $actual_url     = App::make(FileRepository::class)->getFileUrl($file);
+        $actual_url     = $this->repository->getFileUrl($file);
 
         $this->assertEquals($expected_url, $actual_url);
     }
@@ -46,7 +54,7 @@ class FileRepositoryTest extends TestCase
         $path        = 'dir';
         $destination = "{$path}/{$file->name}";
 
-        App::make(FileRepository::class)->moveFile($file, $destination);
+        $this->repository->moveFile($file, $destination);
 
         $this->assertEquals($path, $file->path);
         $this->assertEquals($destination, $file->fullname);
@@ -63,7 +71,7 @@ class FileRepositoryTest extends TestCase
         $path        = 'directory';
         $destination = "{$path}/{$file->name}";
 
-        App::make(FileRepository::class)->moveFile($file, "{$disk}::" . $destination);
+        $this->repository->moveFile($file, "{$disk}::" . $destination);
 
         $this->assertEquals($disk, $file->disk);
         $this->assertEquals($path, $file->path);
@@ -76,10 +84,12 @@ class FileRepositoryTest extends TestCase
     /** @depends testCreateFromUploadedFile */
     public function testExists(File $file)
     {
-        $actual = $file->exists;
-        $expected = Storage::disk($file->disk)->exists($file->fullname);
+        $actual     = $this->repository->exists($file);
+        $expected   = Storage::disk($file->disk)->exists($file->fullname);
 
         $this->assertEquals($expected, $actual);
+
+        return $file;
     }
 
 }
