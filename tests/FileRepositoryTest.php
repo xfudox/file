@@ -73,4 +73,13 @@ class FileRepositoryTest extends TestCase
         return $file;
     }
 
+    /** @depends testCreateFromUploadedFile */
+    public function testExists(File $file)
+    {
+        $actual = $file->exists;
+        $expected = Storage::disk($file->disk)->exists($file->fullname);
+
+        $this->assertEquals($expected, $actual);
+    }
+
 }
