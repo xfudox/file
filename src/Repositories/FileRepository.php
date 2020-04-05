@@ -42,15 +42,6 @@ interface FileRepository
     public function exists(File $file) : bool;
 
     /**
-     * Rename file.
-     *
-     * @param File $file
-     * @param string $new_name
-     * @return void
-     */
-    public function renameFile(File $file, string $new_name);
-
-    /**
      * Retrieve file content.
      *
      * @param File $file

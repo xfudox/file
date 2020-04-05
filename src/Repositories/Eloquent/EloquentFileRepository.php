@@ -89,27 +89,10 @@ class EloquentFileRepository implements FileRepository
     }
 
     /** @inheritDoc */
-    public function renameFile(File $file, string $new_name)
-    {
-        $new_name       = $this->filesystem->basename($new_name);
-
-        if(!$this->exists($file)){
-            throw new \InvalidArgumentException("File {$file->fullname} (id: {$file->id}) does not exists");
-        }
-
-        $new_fullname = (!empty($file->path) ? $file->path . '/' : '') . $new_name;
-        Storage::disk($file->disk)->move($file->fullname, $new_fullname);
-
-        $file->update([
-            'name' => $new_name,
-        ]);
-    }
-
-    /** @inheritDoc */
     public function getFileContent(File $file) : string
     {
         if(!$this->exists($file)){
-            throw new \InvalidArgumentException("File {$file->fullname} (id: {$file->id}) does not exists");
+            throw new \InvalidArgumentException("File {$old_fullname} (id: {$file->id}) does not exists");
         }
 
         return Storage::disk($file->disk)->get($file->fullname);
