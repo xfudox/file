@@ -48,6 +48,30 @@ class FileRepositoryTest extends TestCase
     }
 
     /** @depends testCreateFromUploadedFile */
+    public function testExists(File $file)
+    {
+        $actual     = $this->repository->exists($file);
+        $expected   = Storage::disk($file->disk)->exists($file->fullname);
+        $this->assertTrue($expected);
+        $this->assertEquals($expected, $actual);
+
+        $missing_file = File::create([
+            'name'      => 'missing_image.png',
+            'extension' => 'png',
+            'mime'      => 'image/png',
+            'disk'      => static::DEFAULT_DISK,
+            'path'      => '/',
+            'size'      => 512,
+        ]);
+        $actual     = $this->repository->exists($missing_file);
+        $expected   = Storage::disk($missing_file->disk)->exists($missing_file->fullname);
+        $this->assertFalse($expected);
+        $this->assertEquals($expected, $actual);
+
+        return $file;
+    }
+
+    /** @depends testCreateFromUploadedFile */
     public function testMoveFileOnSameDisk(File $file)
     {
         $source      = $file->fullname;
@@ -77,17 +101,6 @@ class FileRepositoryTest extends TestCase
         $this->assertEquals($path, $file->path);
         $this->assertEquals($destination, $file->fullname);
         Storage::disk($file->disk)->assertExists($destination);
-
-        return $file;
-    }
-
-    /** @depends testCreateFromUploadedFile */
-    public function testExists(File $file)
-    {
-        $actual     = $this->repository->exists($file);
-        $expected   = Storage::disk($file->disk)->exists($file->fullname);
-
-        $this->assertEquals($expected, $actual);
 
         return $file;
     }
