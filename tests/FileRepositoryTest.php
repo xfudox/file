@@ -25,6 +25,7 @@ class FileRepositoryTest extends TestCase
 
         $this->assertEquals(Storage::disk($file->disk)->size($file->fullname), $file->size);
         $this->assertEquals(Storage::disk($file->disk)->mimeType($file->fullname), $file->mime);
+        $this->assertEquals(Storage::disk($file->disk)->size($file->fullname), $file->size);
 
         return $file;
     }
@@ -41,31 +42,35 @@ class FileRepositoryTest extends TestCase
     /** @depends testCreateFromUploadedFile */
     public function testMoveFileOnSameDisk(File $file)
     {
-        $path        = 'directory';
+        $source      = $file->fullname;
+        $path        = 'dir';
         $destination = "{$path}/{$file->name}";
 
         App::make(FileRepository::class)->moveFile($file, $destination);
 
-        Storage::disk($file->disk)->assertExists($destination);
         $this->assertEquals($path, $file->path);
         $this->assertEquals($destination, $file->fullname);
+        Storage::disk($file->disk)->assertExists($destination);
+        Storage::disk($file->disk)->assertMissing($source);
+
+        return $file;
     }
 
-    /** @depends testCreateFromUploadedFile */
+    /** @depends testMoveFileOnSameDisk */
     public function testMoveFileOnDifferentDisks(File $file)
     {
-        $disk        = 'new_disk';
+        $disk        = static::SECOND_DISK;
         $path        = 'directory';
-        $destination = "{$disk}::{$path}/{$file->name}";
+        $destination = "{$path}/{$file->name}";
 
-        Storage::fake($disk);
+        App::make(FileRepository::class)->moveFile($file, "{$disk}::" . $destination);
 
-        App::make(FileRepository::class)->moveFile($file, $destination);
-
-        Storage::disk($file->disk)->assertExists($destination);
         $this->assertEquals($disk, $file->disk);
         $this->assertEquals($path, $file->path);
         $this->assertEquals($destination, $file->fullname);
+        Storage::disk($file->disk)->assertExists($destination);
+
+        return $file;
     }
 
 }
