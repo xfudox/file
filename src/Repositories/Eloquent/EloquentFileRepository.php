@@ -18,8 +18,13 @@ class EloquentFileRepository implements FileRepository
     }
 
     /** @inheritDoc */
-    public function createFromUploadedFile(UploadedFile $uploaded_file, string $full_path = 'public::/') : File
+    public function createFromUploadedFile(UploadedFile $uploaded_file, ?string $full_path = null) : File
     {
+        if(null == $full_path){
+            $default_disk = config('filesystems.default');
+            $full_path = "{$default_disk}::/";
+        }
+        
         list($disk, $path) = explode('::',$full_path);
 
         $file = File::create([
