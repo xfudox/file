@@ -14,7 +14,7 @@ interface FileRepository
      * @param string $full_path
      * @return File
      */
-    public function createFromUploadedFile(UploadedFile $file, string $full_path = 'public::/') : File;
+    public function createFromUploadedFile(UploadedFile $file, ?string $full_path) : File;
 
     /**
      * Return file url.
