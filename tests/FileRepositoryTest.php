@@ -2,6 +2,7 @@
 
 namespace xfudox\File\Tests;
 
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use xfudox\File\Models\File;
 use xfudox\File\Tests\TestCase;
@@ -11,25 +12,45 @@ class FileRepositoryTest extends TestCase
     
     public function testCreateFromUploadedFileToDefaultLocation()
     {
-        $file = $this->test_file;
+		$uploaded_file  = UploadedFile::fake()->image('uploaded_image.png');
+        $file            = $this->test_repository->createFromUploadedFile($uploaded_file);
 
         $this->assertIsObject($file);
         $this->assertInstanceOf(File::class, $file);
 
+        // check file existence on storage
         Storage::disk($file->disk)->assertExists($file->fullname);
 
+        // check file attributes
         $this->assertEquals(Storage::disk($file->disk)->size($file->fullname), $file->size);
         $this->assertEquals(Storage::disk($file->disk)->mimeType($file->fullname), $file->mime);
         $this->assertEquals(Storage::disk($file->disk)->size($file->fullname), $file->size);
-    }
-
-    /** @depends testCreateFromUploadedFileToDefaultLocation */
-    public function testFileLocationIsDefaultDiskRoot()
-    {
-        $file = $this->test_file;
         
+        // check file default  location
         $this->assertEquals(static::DEFAULT_DISK, $file->disk);
         $this->assertEquals('', $file->path);
+    }
+    
+    public function testCreateFromUploadedFileToDifferentLocation()
+    {
+        $uploaded_file  = UploadedFile::fake()->image('uploaded_image.png');
+        $location = static::SECOND_DISK . '::directory';
+        $file            = $this->test_repository->createFromUploadedFile($uploaded_file, $location);
+
+        $this->assertIsObject($file);
+        $this->assertInstanceOf(File::class, $file);
+
+        // check file existence on storage
+        Storage::disk($file->disk)->assertExists($file->fullname);
+
+        // check file attributes
+        $this->assertEquals(Storage::disk($file->disk)->size($file->fullname), $file->size);
+        $this->assertEquals(Storage::disk($file->disk)->mimeType($file->fullname), $file->mime);
+        $this->assertEquals(Storage::disk($file->disk)->size($file->fullname), $file->size);
+        
+        // check file default  location
+        $this->assertEquals(static::SECOND_DISK, $file->disk);
+        $this->assertEquals('directory', $file->path);
     }
 
     /** @depends testCreateFromUploadedFileToDefaultLocation */
@@ -76,7 +97,7 @@ class FileRepositoryTest extends TestCase
         $file = $this->test_file;
         
         $source      = $file->fullname;
-        $path        = 'dir';
+        $path        = 'new_directory';
         $destination = "{$path}/{$file->name}";
 
         $this->test_repository->moveFile($file, $destination);
@@ -91,17 +112,21 @@ class FileRepositoryTest extends TestCase
     public function testMoveFileOnDifferentDisks()
     {
         $file = $this->test_file;
+
+        $original_fullname  = $file->fullname;
+        $original_disk      = $file->disk;
         
-        $disk        = static::SECOND_DISK;
-        $path        = 'directory';
-        $destination = "{$path}/{$file->name}";
+        $destination_disk       = static::SECOND_DISK;
+        $destination_path       = 'directory';
+        $destination_fullname   = "{$destination_path}/{$file->name}";
 
-        $this->test_repository->moveFile($file, "{$disk}::" . $destination);
+        $this->test_repository->moveFile($file, "{$destination_disk}::{$destination_fullname}");
 
-        $this->assertEquals($disk, $file->disk);
-        $this->assertEquals($path, $file->path);
-        $this->assertEquals($destination, $file->fullname);
-        Storage::disk($file->disk)->assertExists($destination);
+        $this->assertEquals($destination_disk, $file->disk);
+        $this->assertEquals($destination_path, $file->path);
+        $this->assertEquals($destination_fullname , $file->fullname);
+        Storage::disk($destination_disk)->assertExists($destination_fullname);
+        Storage::disk($original_disk)->assertMissing($original_fullname);
     }
 
 }

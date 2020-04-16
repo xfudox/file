@@ -58,28 +58,29 @@ class EloquentFileRepository implements FileRepository
             throw new \InvalidArgumentException("File {$file->fullname} (id: {$file->id}) does not exists");
         }
 
+        $source_disk        = $file->disk;
+        $source_fullname    = $file->fullname;
+
         $pattern = '/((?<disk>[\w-]+)::)?(?<fullname>[\w\/.\-\()]+)$/';
         $matches = null;
-        preg_match($pattern, 'fullname', $matches, PREG_UNMATCHED_AS_NULL);
-
-        $source_disk    = $file->disk;
-        $source         = $file->fullname;
+        preg_match($pattern, $destination, $matches, PREG_UNMATCHED_AS_NULL);
         
-        $destination_disk   = $matches['disk'];
-        $new_fullname       = $matches['fullname'];
+        $destination_disk       = $matches['disk'];
+        $destination_fullname   = $matches['fullname'];
 
-        $new_name   = $this->filesystem->basename($new_fullname);
-        $new_path   = $this->filesystem->dirname($new_fullname);
+        $new_name   = $this->filesystem->basename($destination_fullname);
+        $new_path   = $this->filesystem->dirname($destination_fullname);
 
         if($destination_disk == $source_disk || $destination_disk == null){
-            Storage::disk($source_disk)->move($source, $destination);
+            Storage::disk($source_disk)->move($source_fullname, $destination_fullname);
         }
         else {
             Storage::disk($destination_disk)->put(
-                $destination,
-                Storage::disk($source_disk)->get($source)
+                $destination_fullname,
+                Storage::disk($source_disk)->get($source_fullname)
             );
-            Storage::disk($source_disk)->delete($source);
+            Storage::disk($source_disk)->delete($source_fullname);
+            $file->disk = $destination_disk;
         }
         $file->update([
             'name' => $new_name,
