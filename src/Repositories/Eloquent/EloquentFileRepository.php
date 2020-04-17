@@ -7,6 +7,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use xfudox\File\Events\FileIsCreated;
 use xfudox\File\Events\FileIsMoved;
+use xfudox\File\Events\FileIsRenamed;
 use xfudox\File\Models\File;
 use xfudox\File\Repositories\FileRepository;
 
@@ -62,6 +63,7 @@ class EloquentFileRepository implements FileRepository
             throw new \InvalidArgumentException("File {$file->fullname} (id: {$file->id}) does not exists");
         }
 
+        $old_name           = $file->name;
         $source_disk        = $file->disk;
         $source_fullname    = $file->fullname;
 
@@ -92,6 +94,9 @@ class EloquentFileRepository implements FileRepository
         ]);
 
         event(new FileIsMoved($file));
+        if($new_name != $old_name){
+            event(new FileIsRenamed($file));
+        }
 
     }
 

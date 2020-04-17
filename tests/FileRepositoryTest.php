@@ -6,6 +6,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use xfudox\File\Events\FileIsCreated;
 use xfudox\File\Events\FileIsMoved;
+use xfudox\File\Events\FileIsRenamed;
 use xfudox\File\Models\File;
 use xfudox\File\Tests\TestCase;
 
@@ -137,6 +138,21 @@ class FileRepositoryTest extends TestCase
         $this->assertEquals($destination_fullname , $file->fullname);
         Storage::disk($destination_disk)->assertExists($destination_fullname);
         Storage::disk($original_disk)->assertMissing($original_fullname);
+    }
+
+    public function testCanRenameFileWhileMoving()
+    {
+        $this->expectsEvents(FileIsRenamed::class);
+
+        $file = $this->test_file;
+        
+        $source         = $file->fullname;
+        $new_name       = 'new_name.png';
+        $destination    = "new_directory/{$new_name}";
+
+        $this->test_repository->moveFile($file, $destination);
+
+        $this->assertEquals($new_name, $file->name);
     }
 
 }
