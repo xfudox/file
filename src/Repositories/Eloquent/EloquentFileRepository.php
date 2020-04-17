@@ -5,6 +5,7 @@ namespace xfudox\File\Repositories\Eloquent;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use xfudox\File\Events\FileIsCreated;
 use xfudox\File\Models\File;
 use xfudox\File\Repositories\FileRepository;
 
@@ -37,6 +38,8 @@ class EloquentFileRepository implements FileRepository
         ]);
 
         $uploaded_file->storeAs($path, $uploaded_file->getClientOriginalName(), ['disk' => $disk]);
+
+        event(new FileIsCreated($file));
 
         return $file;
     }

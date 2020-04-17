@@ -4,6 +4,7 @@ namespace xfudox\File\Tests;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use xfudox\File\Events\FileIsCreated;
 use xfudox\File\Models\File;
 use xfudox\File\Tests\TestCase;
 
@@ -29,6 +30,15 @@ class FileRepositoryTest extends TestCase
         // check file default  location
         $this->assertEquals(static::DEFAULT_DISK, $file->disk);
         $this->assertEquals('', $file->path);
+    }
+
+    /** @depends testCreateFromUploadedFileToDefaultLocation */
+    public function testFileCreationFireEvent()
+    {
+        $this->expectsEvents(FileIsCreated::class);
+
+        $uploaded_file  = UploadedFile::fake()->image('uploaded_image.png');
+        $file           = $this->test_repository->createFromUploadedFile($uploaded_file);
     }
     
     public function testCreateFromUploadedFileToDifferentLocation()
