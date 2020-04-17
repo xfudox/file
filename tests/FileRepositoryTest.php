@@ -13,7 +13,9 @@ class FileRepositoryTest extends TestCase
     
     public function testCreateFromUploadedFileToDefaultLocation()
     {
-		$uploaded_file  = UploadedFile::fake()->image('uploaded_image.png');
+        $this->expectsEvents(FileIsCreated::class);
+
+        $uploaded_file  = UploadedFile::fake()->image('uploaded_image.png');
         $file            = $this->test_repository->createFromUploadedFile($uploaded_file);
 
         $this->assertIsObject($file);
@@ -31,17 +33,11 @@ class FileRepositoryTest extends TestCase
         $this->assertEquals(static::DEFAULT_DISK, $file->disk);
         $this->assertEquals('', $file->path);
     }
-
-    public function testFileCreationFireEvent()
-    {
-        $this->expectsEvents(FileIsCreated::class);
-
-        $uploaded_file  = UploadedFile::fake()->image('uploaded_image.png');
-        $file           = $this->test_repository->createFromUploadedFile($uploaded_file);
-    }
     
     public function testCreateFromUploadedFileToDifferentLocation()
     {
+        $this->expectsEvents(FileIsCreated::class);
+
         $uploaded_file  = UploadedFile::fake()->image('uploaded_image.png');
         $location = static::SECOND_DISK . '::directory';
         $file            = $this->test_repository->createFromUploadedFile($uploaded_file, $location);
