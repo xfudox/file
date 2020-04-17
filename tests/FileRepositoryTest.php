@@ -32,7 +32,6 @@ class FileRepositoryTest extends TestCase
         $this->assertEquals('', $file->path);
     }
 
-    /** @depends testCreateFromUploadedFileToDefaultLocation */
     public function testFileCreationFireEvent()
     {
         $this->expectsEvents(FileIsCreated::class);
