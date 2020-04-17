@@ -5,6 +5,7 @@ namespace xfudox\File\Tests;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use xfudox\File\Events\FileIsCreated;
+use xfudox\File\Events\FileIsMoved;
 use xfudox\File\Models\File;
 use xfudox\File\Tests\TestCase;
 
@@ -99,6 +100,8 @@ class FileRepositoryTest extends TestCase
     /** @depends testCreateFromUploadedFileToDefaultLocation */
     public function testMoveFileOnSameDisk()
     {
+        $this->expectsEvents(FileIsMoved::class);
+
         $file = $this->test_file;
         
         $source      = $file->fullname;
@@ -116,6 +119,8 @@ class FileRepositoryTest extends TestCase
     /** @depends testMoveFileOnSameDisk */
     public function testMoveFileOnDifferentDisks()
     {
+        $this->expectsEvents(FileIsMoved::class);
+
         $file = $this->test_file;
 
         $original_fullname  = $file->fullname;

@@ -6,6 +6,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use xfudox\File\Events\FileIsCreated;
+use xfudox\File\Events\FileIsMoved;
 use xfudox\File\Models\File;
 use xfudox\File\Repositories\FileRepository;
 
@@ -89,6 +90,9 @@ class EloquentFileRepository implements FileRepository
             'name' => $new_name,
             'path' => $new_path,
         ]);
+
+        event(new FileIsMoved($file));
+
     }
 
     /** @inheritDoc */
