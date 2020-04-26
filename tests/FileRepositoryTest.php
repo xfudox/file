@@ -374,7 +374,6 @@ class FileRepositoryTest extends TestCase
             move file on different disk changing name
             get file contents with existing file
             get file contents with non existing file
-            get file size with every possible combination of measure unit/representation
      */
 
 }
