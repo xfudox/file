@@ -51,20 +51,12 @@ class EloquentFileRepository implements FileRepository
     /** @inheritDoc */
     public function getFileUrl(File $file) : string
     {
-        if(!$this->exists($file)){
-            throw new \InvalidArgumentException("File {$file->fullname} (id: {$file->id}) does not exists");
-        }
-
         return Storage::disk($file->disk)->url($file->fullname);
     }
 
     /** @inheritDoc */
     public function moveFile(File $file, string $destination)
     {
-        if(!$this->exists($file)){
-            throw new \InvalidArgumentException("File {$file->fullname} (id: {$file->id}) does not exists");
-        }
-
         $old_name           = $file->name;
         $source_disk        = $file->disk;
         $source_fullname    = $file->fullname;
@@ -111,10 +103,6 @@ class EloquentFileRepository implements FileRepository
     /** @inheritDoc */
     public function getFileContent(File $file) : string
     {
-        if(!$this->exists($file)){
-            throw new \InvalidArgumentException("File {$old_fullname} (id: {$file->id}) does not exists");
-        }
-
         return Storage::disk($file->disk)->get($file->fullname);
     }
 
