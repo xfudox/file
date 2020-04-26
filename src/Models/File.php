@@ -10,7 +10,7 @@ class File extends Model
     protected $fillable = [
         'name',
         'extension',
-        'mime',
+        // 'mime',
         'disk',
         'path',
         'size',
@@ -25,8 +25,8 @@ class File extends Model
     // ACCESSORS AND MUTATORS
     public function setPathAttribute(string $value)
     {
-        if(substr($value, -1) == '/'){
-            $value = substr($value, 0, -1);
+        if(substr($value, -1) !== '/'){
+            $value .= '/';
         }
 
         $this->attributes['path'] = $value;
@@ -35,10 +35,7 @@ class File extends Model
     // APPENDED ATTRIBUTES ACCESSORS
     public function getFullnameAttribute() : string
     {
-        if($this->path == ''){
-            return $this->name;
-        }
-        return $this->path . '/' . $this->name;
+        return $this->path . $this->name;
     }
 
     public function getUrlAttribute() : string

@@ -21,25 +21,27 @@ class EloquentFileRepository implements FileRepository
     }
 
     /** @inheritDoc */
-    public function createFromUploadedFile(UploadedFile $uploaded_file, ?string $full_path = null) : File
+    public function createFromUploadedFile(UploadedFile $uploaded_file, string $destination = '/', ?string $disk = null) : File
     {
-        if(null == $full_path){
-            $default_disk = config('filesystems.default');
-            $full_path = "{$default_disk}::/";
+        if(null == $disk || '' == $disk){
+            $disk = config('filesystems.default');
         }
-        
-        list($disk, $path) = explode('::',$full_path);
+
+        $dest_data = $this->getDataFromDestination($destination);
+        $name   = $dest_data['name'] ?? $uploaded_file->getClientOriginalName();
+        $path   = $dest_data['path'];
+        $ext    = $dest_data['extension'] ?? $uploaded_file->getClientOriginalExtension();
 
         $file = File::create([
-            'name'      => $uploaded_file->getClientOriginalName(),
-            'extension' => $uploaded_file->getClientOriginalExtension(),
-            'mime'      => $uploaded_file->getClientMimeType(),
+            'name'      => $name,
+            'extension' => $ext,
+            // 'mime'      => $uploaded_file->getClientMimeType(),
             'size'      => $uploaded_file->getSize(),
             'disk'      => $disk,
             'path'      => $path,
         ]);
 
-        $uploaded_file->storeAs($path, $uploaded_file->getClientOriginalName(), ['disk' => $disk]);
+        $uploaded_file->storeAs($destination, $uploaded_file->getClientOriginalName(), ['disk' => $disk]);
 
         event(new FileIsCreated($file));
 
@@ -151,5 +153,63 @@ class EloquentFileRepository implements FileRepository
         }
 
         return $file->size / ($base ** $exp);
+    }
+
+    /** @inheritDoc */
+    public function getDataFromDestination(string $destination) : array
+    {
+        if($destination == '' || $destination == '/'){
+            return [
+                'path'      => '/',
+                'name'      => null,
+                'extension' => null,
+            ];
+        }
+
+        if($destination[0] == '/'){
+            $destination = substr($destination, 1);
+        }
+
+        $x = strrpos($destination, '/');
+        // e.g.: 'file.png'
+        if(false === $x){
+            $path = '/';
+            $name = $destination;
+        }
+        // e.g.: 'path/to/'
+        elseif(strlen($destination)-1 ==$x){
+            return [
+                'path'      => $destination,
+                'name'      => null,
+                'extension' => null,
+            ];
+        }
+        else{
+            $path = substr($destination, 0, $x+1);
+            $name = substr($destination, $x+1);
+        }
+
+        $y = strrpos($name, '.');
+        // e.g.: 'path/to/file'
+        if(false === $y){
+            $extension = null;
+        }
+        // e.g.: 'path/to/.hidden_file'
+        elseif(0 === $y){
+            return [
+                'path'      => $path,
+                'name'      => $name,
+                'extension' => null,
+            ];
+        }
+        else{
+            $extension = substr($name, $y+1);
+        }
+
+        return [
+            'path'      => $path,
+            'name'      => $name,
+            'extension' => $extension,
+        ];
     }
 }

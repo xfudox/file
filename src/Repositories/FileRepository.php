@@ -8,13 +8,21 @@ use xfudox\File\Models\File;
 interface FileRepository
 {
     /**
+     * Split sting to get data about destination file.
+     *
+     * @param string $destination
+     * @return array
+     */
+    public function getDataFromDestination(string $destination) : array;
+
+    /**
      * Create new file from uploaded file.
      *
      * @param UploadedFile $file
-     * @param string $full_path
+     * @param string $destination
      * @return File
      */
-    public function createFromUploadedFile(UploadedFile $file, ?string $full_path) : File;
+    public function createFromUploadedFile(UploadedFile $uploaded_file, string $destination = '', ?string $disk = null) : File;
 
     /**
      * Return file url.

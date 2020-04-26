@@ -12,55 +12,248 @@ use xfudox\File\Tests\TestCase;
 
 class FileRepositoryTest extends TestCase
 {
-    
-    public function testCreateFromUploadedFileToDefaultLocation()
+    /**
+     * Test that from string are extracted correctly expected filepath information.
+     *
+     * @return void
+     */
+    public function testGetDataFromDestination()
     {
-        $this->expectsEvents(FileIsCreated::class);
+        $expected_results = [
+            'path/to/file.png' => [
+                'path'      => 'path/to/',
+                'name'      => 'file.png',
+                'extension' => 'png'
+            ],
+            'path/to/file' => [
+                'path'      => 'path/to/',
+                'name'      => 'file',
+                'extension' => null
+            ],
+            'path/to/' => [
+                'path'      => 'path/to/',
+                'name'      => null,
+                'extension' => null
+            ],
+            'file' => [
+                'path'      => '/',
+                'name'      => 'file',
+                'extension' => null
+            ],
+            'path/to/.hidden_file' => [
+                'path'      => 'path/to/',
+                'name'      => '.hidden_file',
+                'extension' => null
+            ],
+            '/' => [
+                'path'      => '/',
+                'name'      => null,
+                'extension' => null
+            ],
+            '' => [
+                'path'      => '/',
+                'name'      => null,
+                'extension' => null
+            ],
+            '/path/to/file.png' => [
+                'path'      => 'path/to/',
+                'name'      => 'file.png',
+                'extension' => 'png'
+            ],
+        ];
 
-        $uploaded_file  = UploadedFile::fake()->image('uploaded_image.png');
-        $file            = $this->test_repository->createFromUploadedFile($uploaded_file);
+        foreach($expected_results as $input => $output){
+            $actual_results = $this->test_repository->getDataFromDestination($input);
 
-        $this->assertIsObject($file);
-        $this->assertInstanceOf(File::class, $file);
+            foreach($output as $value => $expected){
+                if(null == $expected){
+                    $this->assertNull(
+                        $actual_results[$value],
+                        "Failed asserting that expected null {$value} equals '{$actual_results[$value]}' for input '{$input}'"
+                    );
+                }
+                else{
+                    $this->assertEquals(
+                        $expected,
+                        $actual_results[$value],
+                        "Failed asserting that expected {$value} '{$expected}' equals '{$actual_results[$value]}' for input '{$input}'"
+                    );
+                }
 
-        // check file existence on storage
-        Storage::disk($file->disk)->assertExists($file->fullname);
-
-        // check file attributes
-        $this->assertEquals(Storage::disk($file->disk)->size($file->fullname), $file->size);
-        $this->assertEquals(Storage::disk($file->disk)->mimeType($file->fullname), $file->mime);
-        $this->assertEquals(Storage::disk($file->disk)->size($file->fullname), $file->size);
-        
-        // check file default  location
-        $this->assertEquals(static::DEFAULT_DISK, $file->disk);
-        $this->assertEquals('', $file->path);
+            }
+        }
     }
-    
-    public function testCreateFromUploadedFileToDifferentLocation()
+
+    /**
+     * Checks:
+     *  1 FileIsCreted event is fired
+     *  2 return a File instance
+     *  3 returned File instance has same name, extension and size of given uploaded file
+     *  4 returned File instance refers default disk
+     *  5 returned File instance path is root
+     *  6 file actually exists on default disk
+     *
+     * @return void
+     */
+    public function testFileCreationWithDefaultArguements()
     {
-        $this->expectsEvents(FileIsCreated::class);
-
-        $uploaded_file  = UploadedFile::fake()->image('uploaded_image.png');
-        $location = static::SECOND_DISK . '::directory';
-        $file            = $this->test_repository->createFromUploadedFile($uploaded_file, $location);
-
-        $this->assertIsObject($file);
-        $this->assertInstanceOf(File::class, $file);
-
-        // check file existence on storage
-        Storage::disk($file->disk)->assertExists($file->fullname);
-
-        // check file attributes
-        $this->assertEquals(Storage::disk($file->disk)->size($file->fullname), $file->size);
-        $this->assertEquals(Storage::disk($file->disk)->mimeType($file->fullname), $file->mime);
-        $this->assertEquals(Storage::disk($file->disk)->size($file->fullname), $file->size);
+        $uploaded_file      = UploadedFile::fake()->image('uploaded_image.png');
+        $original_extension = $uploaded_file->getClientOriginalExtension();
+        $original_name      = $uploaded_file->getClientOriginalName();
+        $original_size      = $uploaded_file->getSize();
+        $default_disk       = config('filesystems.default');
         
-        // check file default  location
-        $this->assertEquals(static::SECOND_DISK, $file->disk);
-        $this->assertEquals('directory', $file->path);
+        /* 1 */ $this->expectsEvents(FileIsCreated::class);
+
+        $file = $this->test_repository->createFromUploadedFile($uploaded_file);
+
+        /* 2 */ $this->assertInstanceOf(File::class, $file);
+        /* 3 */ $this->assertEquals($original_name, $file->name);
+        /* 3 */ $this->assertEquals($original_extension, $file->extension);
+        /* 3 */ $this->assertEquals($original_size, $file->size);
+        /* 4 */ $this->assertEquals($default_disk, $file->disk);
+        /* 5 */ $this->assertEquals('/', $file->path);
+        /* 6 */ Storage::disk($default_disk)->assertExists($file->fullname);
     }
 
-    /** @depends testCreateFromUploadedFileToDefaultLocation */
+    /**
+     * Checks:
+     *  1 FileIsCreted event is fired
+     *  2 return a File instance
+     *  3 returned File instance has size of given uploaded file
+     *  4 returned File instance has given name and extension
+     *  5 returned File instance path disk is root
+     *  6 returned File instance refers default disk
+     *  7 file actually exists on default disk
+     *
+     * @return void
+     */
+    public function testFileCreationWithNewName()
+    {
+        $uploaded_file      = UploadedFile::fake()->image('uploaded_image.png');
+        $new_name           = 'new_name.png';
+        $new_extension      = 'png';
+        $original_size      = $uploaded_file->getSize();
+        $default_disk       = config('filesystems.default');
+        
+        /* 1 */ $this->expectsEvents(FileIsCreated::class);
+
+        $file = $this->test_repository->createFromUploadedFile($uploaded_file, $new_name);
+
+        /* 2 */ $this->assertInstanceOf(File::class, $file);
+        /* 3 */ $this->assertEquals($original_size, $file->size);
+        /* 4 */ $this->assertEquals($new_name, $file->name);
+        /* 4 */ $this->assertEquals($new_extension, $file->extension);
+        /* 5 */ $this->assertEquals('/', $file->path);
+        /* 6 */ $this->assertEquals($default_disk, $file->disk);
+        /* 7 */ Storage::disk($default_disk)->assertExists($file->fullname);
+    }
+
+    /**
+     * Checks:
+     *  1 FileIsCreted event is fired
+     *  2 return a File instance
+     *  3 returned File instance has same name, extension and size of given uploaded file
+     *  4 returned File instance path is given one
+     *  5 returned File instance refers default disk
+     *  6 file actually exists on default disk at given path
+     *
+     * @return void
+     */
+    public function testFileCreationAtGivenPath()
+    {
+        $uploaded_file      = UploadedFile::fake()->image('uploaded_image.png');
+        $original_extension = $uploaded_file->getClientOriginalExtension();
+        $original_name      = $uploaded_file->getClientOriginalName();
+        $original_size      = $uploaded_file->getSize();
+        $path               = 'directory/';
+        $default_disk       = config('filesystems.default');
+        
+        /* 1 */ $this->expectsEvents(FileIsCreated::class);
+
+        $file = $this->test_repository->createFromUploadedFile($uploaded_file, $path);
+
+        /* 2 */ $this->assertInstanceOf(File::class, $file);
+        /* 3 */ $this->assertEquals($original_name, $file->name);
+        /* 3 */ $this->assertEquals($original_extension, $file->extension);
+        /* 3 */ $this->assertEquals($original_size, $file->size);
+        /* 4 */ $this->assertEquals($path, $file->path);
+        /* 5 */ $this->assertEquals($default_disk, $file->disk);
+        /* 6 */ Storage::disk($default_disk)->assertExists($file->fullname);
+    }
+
+    /**
+     * Checks:
+     *  1 FileIsCreted event is fired
+     *  2 return a File instance
+     *  3 returned File instance has size of given uploaded file
+     *  4 returned File instance has given name and extension
+     *  5 returned File instance path disk is root
+     *  6 returned File instance refers given disk
+     *  7 file actually exists on given disk
+     *
+     * @return void
+     */
+    public function testFileCreationWithNewNameOnGivenDisk()
+    {
+        $uploaded_file      = UploadedFile::fake()->image('uploaded_image.png');
+        $new_name           = 'new_name.png';
+        $new_extension      = 'png';
+        $original_size      = $uploaded_file->getSize();
+        $disk               = static::SECOND_DISK;
+        
+        /* 1 */ $this->expectsEvents(FileIsCreated::class);
+
+        $file = $this->test_repository->createFromUploadedFile($uploaded_file, $new_name, $disk);
+
+        /* 2 */ $this->assertInstanceOf(File::class, $file);
+        /* 3 */ $this->assertEquals($original_size, $file->size);
+        /* 4 */ $this->assertEquals($new_name, $file->name);
+        /* 4 */ $this->assertEquals($new_extension, $file->extension);
+        /* 5 */ $this->assertEquals('/', $file->path);
+        /* 6 */ $this->assertEquals($disk, $file->disk);
+        /* 7 */ Storage::disk($disk)->assertExists($file->fullname);
+    }
+
+    /**
+     * Checks:
+     *  1 FileIsCreted event is fired
+     *  2 return a File instance
+     *  3 returned File instance has same name, extension and size of given uploaded file
+     *  4 returned File instance path is given one
+     *  5 returned File instance refers given disk
+     *  6 file actually exists on given disk at given path
+     *
+     * @return void
+     */
+    public function testFileCreationAtGivenPathOnGivenDisk()
+    {
+        $uploaded_file      = UploadedFile::fake()->image('uploaded_image.png');
+        $original_extension = $uploaded_file->getClientOriginalExtension();
+        $original_name      = $uploaded_file->getClientOriginalName();
+        $original_size      = $uploaded_file->getSize();
+        $path               = 'directory/';
+        $disk               = static::SECOND_DISK;
+        
+        /* 1 */ $this->expectsEvents(FileIsCreated::class);
+
+        $file = $this->test_repository->createFromUploadedFile($uploaded_file, $path, $disk);
+
+        /* 2 */ $this->assertInstanceOf(File::class, $file);
+        /* 3 */ $this->assertEquals($original_name, $file->name);
+        /* 3 */ $this->assertEquals($original_extension, $file->extension);
+        /* 3 */ $this->assertEquals($original_size, $file->size);
+        /* 4 */ $this->assertEquals($path, $file->path);
+        /* 5 */ $this->assertEquals($disk, $file->disk);
+        /* 6 */ Storage::disk($disk)->assertExists($file->fullname);
+    }
+
+    /**
+     * Checks:
+     *  1 url generated for given File equals the one generated with the Storage facade using File's own disk, path and name.
+     *
+     * @return void
+     */
     public function testGetFileUrl()
     {
         $file = $this->test_file;
@@ -68,91 +261,47 @@ class FileRepositoryTest extends TestCase
         $expected_url   = Storage::disk($file->disk)->url($file->fullname);
         $actual_url     = $this->test_repository->getFileUrl($file);
 
-        $this->assertEquals($expected_url, $actual_url);
+        /* 1 */ $this->assertEquals($expected_url, $actual_url);
     }
 
-    /** @depends testCreateFromUploadedFileToDefaultLocation */
+    /**
+     * Checks:
+     *  1 given File instance refer an existing file on File's disk at File path and name.
+     *
+     * @return void
+     */
     public function testFileExistsOnStorage()
     {
         $file = $this->test_file;
         
-        $actual     = $this->test_repository->exists($file);
-        $expected   = Storage::disk($file->disk)->exists($file->fullname);
-        $this->assertTrue($expected);
-        $this->assertEquals($expected, $actual);
+        /* 1 */ Storage::disk($file->disk)->assertExists($file->fullname);
     }
 
+    /**
+     * Checks:
+     *  1 given File instance don't refer an existing file on File's disk at File path and name.
+     *
+     * @return void
+     */
     public function testFileDontExistsOnStorage()
     {
         $missing_file = File::create([
             'name'      => 'missing_image.png',
             'extension' => 'png',
-            'mime'      => 'image/png',
             'disk'      => static::DEFAULT_DISK,
             'path'      => '/',
             'size'      => 512,
         ]);
-        $actual     = $this->test_repository->exists($missing_file);
-        $expected   = Storage::disk($missing_file->disk)->exists($missing_file->fullname);
-        $this->assertFalse($expected);
-        $this->assertEquals($expected, $actual);
-    }
-
-    /** @depends testCreateFromUploadedFileToDefaultLocation */
-    public function testMoveFileOnSameDisk()
-    {
-        $this->expectsEvents(FileIsMoved::class);
-
-        $file = $this->test_file;
         
-        $source      = $file->fullname;
-        $path        = 'new_directory';
-        $destination = "{$path}/{$file->name}";
-
-        $this->test_repository->moveFile($file, $destination);
-
-        $this->assertEquals($path, $file->path);
-        $this->assertEquals($destination, $file->fullname);
-        Storage::disk($file->disk)->assertExists($destination);
-        Storage::disk($file->disk)->assertMissing($source);
+        /* 1 */ Storage::disk($missing_file->disk)->assertMissing($missing_file->fullname);
     }
 
-    /** @depends testMoveFileOnSameDisk */
-    public function testMoveFileOnDifferentDisks()
-    {
-        $this->expectsEvents(FileIsMoved::class);
-
-        $file = $this->test_file;
-
-        $original_fullname  = $file->fullname;
-        $original_disk      = $file->disk;
-        
-        $destination_disk       = static::SECOND_DISK;
-        $destination_path       = 'directory';
-        $destination_fullname   = "{$destination_path}/{$file->name}";
-
-        $this->test_repository->moveFile($file, "{$destination_disk}::{$destination_fullname}");
-
-        $this->assertEquals($destination_disk, $file->disk);
-        $this->assertEquals($destination_path, $file->path);
-        $this->assertEquals($destination_fullname , $file->fullname);
-        Storage::disk($destination_disk)->assertExists($destination_fullname);
-        Storage::disk($original_disk)->assertMissing($original_fullname);
-    }
-
-    public function testCanRenameFileWhileMoving()
-    {
-        $this->expectsEvents(FileIsRenamed::class);
-
-        $file = $this->test_file;
-        
-        $source         = $file->fullname;
-        $new_name       = 'new_name.png';
-        $destination    = "new_directory/{$new_name}";
-
-        $this->test_repository->moveFile($file, $destination);
-
-        $this->assertEquals($new_name, $file->name);
-    }
+    /* 
+        TODO tests:
+            move file on same disk without change name
+            move file on same disk changing name
+            move file on different disk without change name
+            move file on different disk changing name
+     */
 
 }
