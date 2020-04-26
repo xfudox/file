@@ -5,8 +5,6 @@ namespace xfudox\File\Tests;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use xfudox\File\Events\FileIsCreated;
-use xfudox\File\Events\FileIsMoved;
-use xfudox\File\Events\FileIsRenamed;
 use xfudox\File\Models\File;
 use xfudox\File\Tests\TestCase;
 
