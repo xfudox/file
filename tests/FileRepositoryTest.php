@@ -294,12 +294,87 @@ class FileRepositoryTest extends TestCase
         /* 1 */ Storage::disk($missing_file->disk)->assertMissing($missing_file->fullname);
     }
 
+    /**
+     * Check returned file size in every possible format.
+     * 
+     * Available measure unit are:
+     *  • b/bytes
+     *  • kb/kilobytes
+     *  • mb/megabytes
+     *  • gb/gigabytes
+     * 
+     * Available representation are:
+     *  • binary
+     *  • decimal
+     * 
+     * Total possible combinations: 16
+     * Total representations: 8
+     *
+     * @return void
+     */
+    public function testGetFileSizeInEveryPossibleFormat()
+    {
+        $file = $this->test_file;
+
+        $data = [
+            'b' => [
+                'binary'    => $file->size,
+                'decimal'   => $file->size,
+            ], 
+            'bytes' => [
+                'binary'    => $file->size,
+                'decimal'   => $file->size,
+            ],
+            'kb' => [
+                'binary'    => $file->size / 1024,
+                'decimal'   => $file->size / (10 ** 3),
+            ], 
+            'kilobytes' => [
+                'binary'    => $file->size / 1024,
+                'decimal'   => $file->size / (10 ** 3),
+            ],
+            'mb' => [
+                'binary'    => $file->size / (1024 ** 2),
+                'decimal'   => $file->size / (10 ** 6),
+            ], 
+            'megabytes' => [
+                'binary'    => $file->size / (1024 ** 2),
+                'decimal'   => $file->size / (10 ** 6),
+            ],
+            'gb' => [
+                'binary'    => $file->size / (1024 ** 3),
+                'decimal'   => $file->size / (10 ** 9),
+            ], 
+            'gigabytes' => [
+                'binary'    => $file->size / (1024 ** 3),
+                'decimal'   => $file->size / (10 ** 9),
+            ],
+        ];
+
+        // test with default arguements
+        $this->assertEquals(
+            $file->size,
+            $this->test_repository->getFileSize($file)
+        );
+
+        // test combinations
+        foreach($data as $measure_unit => $representations){
+            foreach($representations as $representation => $expected){
+                $actual = $this->test_repository->getFileSize($file, $measure_unit, $representation);
+                $this->assertEquals($expected,$actual);
+            }
+        }
+    }
+
     /* 
         TODO tests:
             move file on same disk without change name
             move file on same disk changing name
             move file on different disk without change name
             move file on different disk changing name
+            get file contents with existing file
+            get file contents with non existing file
+            get file size with every possible combination of measure unit/representation
      */
 
 }
