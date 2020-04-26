@@ -106,6 +106,7 @@ class EloquentFileRepository implements FileRepository
         return Storage::disk($file->disk)->get($file->fullname);
     }
 
+    /** @inheritDoc */
     public function getFileSize(File $file, string $measure_unit = 'bytes', string $conversion = 'binary') : float
     {
         if($conversion != 'binary' && $conversion != 'decimal'){
@@ -133,7 +134,7 @@ class EloquentFileRepository implements FileRepository
 
             case 'bytes':
             case 'b':
-                $exp = 0;
+                return $file->size;
                 break;
 
             default:
