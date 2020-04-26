@@ -56,4 +56,24 @@ interface FileRepository
      * @return string
      */
     public function getFileContent(File $file) : string;
+    
+    /**
+     * Return file size in different formats.
+     * 
+     * Available measure unit are:
+     *  • b/bytes
+     *  • kb/kilobytes
+     *  • mb/megabytes
+     *  • gb/gigabytes
+     * 
+     * Available representation are:
+     *  • binary
+     *  • decimal
+     *
+     * @param File $file
+     * @param string $measure_unit
+     * @param string $conversion
+     * @return float
+     */
+    public function getFileSize(File $file, string $measure_unit = 'bytes', string $conversion = 'binary') : float;
 }
